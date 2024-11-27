@@ -322,12 +322,24 @@ class _CategoryState extends State<Profiledetails> {
                       ),
                       const SizedBox(height: 20),
                       ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFE8C00),
+                          minimumSize: const Size(350, 0),
+                          alignment: Alignment.bottomCenter,
+                        ),
                         onPressed: () {
                           if (_formKeyss.currentState!.validate()) {
                             saveUserProfile();
                           }
                         },
-                        child: const Text('Save'),
+                        child: Padding(
+                          padding: EdgeInsets.all(20.0),
+                          child: const Text('Save', style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),),
+                        ),
                       ),
                     ],
                   ),
