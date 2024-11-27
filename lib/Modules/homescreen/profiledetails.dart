@@ -260,7 +260,7 @@ class _CategoryState extends State<Profiledetails> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8.0),
                           ),
-                          hintText: '${genderController.text.isEmpty ? "Select Gender":"${genderController.text}"}',
+                          hintText: genderController.text.toString()=="" ? "Select Gender":"${genderController.text}",
                         ),
                         items: <String>['Male', 'Female', 'Other']
                             .map<DropdownMenuItem<String>>((String value) {
@@ -303,6 +303,7 @@ class _CategoryState extends State<Profiledetails> {
                       const Text('Email'),
                       const SizedBox(height: 10.0),
                       TextFormField(
+                        enabled: false,
                         controller: emailController,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
