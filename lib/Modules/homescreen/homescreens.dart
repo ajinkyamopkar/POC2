@@ -62,7 +62,6 @@ class _MyWidgetState extends State<Homescreen> {
 
   @override
   Widget build(BuildContext context) {
-    var onTap;
     return Scaffold(
       backgroundColor: Colors.white,
       body: Form(
@@ -299,8 +298,6 @@ class _MyWidgetState extends State<Homescreen> {
   // Example of incorrect casting
 
   Future<void> _login() async {
-    print("Email: ${emailController.text}");
-    print("Password: ${passwordController.text}");
     if (_formkeys.currentState!.validate()) {
       try {
         UserCredential userCredential = await _auth.signInWithEmailAndPassword(
@@ -308,21 +305,13 @@ class _MyWidgetState extends State<Homescreen> {
           password: passwordController.text.trim(),
         );
 
-        // Debugging: Check what userCredential.user returns
         var userData = userCredential.user;
-        print("User data: ${userData.runtimeType}");
 
         if (userData != null) {
-          // Proceed if userData is not null
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const Categorydetails()),
-          );
         } else {
           throw Exception("User data is null");
         }
       } catch (e) {
-        print("Login failed: $e");
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text("Login failed: ${e.toString()}")),
         );

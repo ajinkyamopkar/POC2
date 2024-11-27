@@ -1,8 +1,12 @@
+import 'dart:developer';
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:getxbase/Modules/homescreen/setting.dart';
 import 'package:image_picker/image_picker.dart';
+
+import 'category.dart';
 
 class Profiledetails extends StatefulWidget {
   const Profiledetails({super.key});
@@ -13,24 +17,95 @@ class Profiledetails extends StatefulWidget {
 
 final _formKeyss = GlobalKey<FormState>();
 
-String name = '';
-DateTime? dateOfBirth;
-String? gender;
-String phone = '';
-String email = '';
+final nameController = TextEditingController();
+final emailController = TextEditingController();
+final mobNoController = TextEditingController();
+final genderController = TextEditingController();
+final dateofBirthController = TextEditingController();
+
+Map<String, dynamic>? userProfile = {};
 
 class _CategoryState extends State<Profiledetails> {
   File? _image; // To hold the selected image
-
   final ImagePicker _picker = ImagePicker();
 
   Future<void> _pickImage(ImageSource source) async {
-    final pickedFile = await _picker.getImage(source: source);
+    final pickedFile = await _picker.pickImage(source: source);
 
     if (pickedFile != null) {
       setState(() {
         _image = File(pickedFile.path);
       });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUserProfile();
+  }
+
+  Future<Map<String, dynamic>?> getCurrentUserProfile() async {
+    try {
+      User? user = FirebaseAuth.instance.currentUser;
+
+      if (user != null) {
+        DocumentSnapshot userDoc = await FirebaseFirestore.instance
+            .collection('register')
+            .doc(user.uid)
+            .get();
+
+        if (userDoc.exists) {
+          return userDoc.data() as Map<String, dynamic>;
+        } else {
+          return null;
+        }
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+
+  void fetchUserProfile() async {
+    Map<String, dynamic>? profileData = await getCurrentUserProfile();
+    if (profileData != null) {
+      nameController.text = profileData['username'] ?? "";
+      emailController.text = profileData['email'] ?? "";
+      genderController.text = profileData['gender'] ?? "";
+      dateofBirthController.text = profileData['dateOfBirth'] ?? "";
+      mobNoController.text = profileData['mobNo'] ?? "";
+    }
+  }
+
+  Future<void> saveUserProfile() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      try {
+        await FirebaseFirestore.instance
+            .collection('register')
+            .doc(user.uid)
+            .set({
+          'uid': user.uid,
+          'email': emailController.text,
+          'username': nameController.text,
+          'gender': genderController.text,
+          'dateOfBirth': dateofBirthController.text,
+          'mobNo': mobNoController.text,
+          'createdAt': FieldValue.serverTimestamp(),
+        });
+
+
+
+        Navigator.pushReplacement(context,
+            MaterialPageRoute(builder: (context) => const Category()));
+
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
     }
   }
 
@@ -74,8 +149,13 @@ class _CategoryState extends State<Profiledetails> {
                       ),
                     ),
                     const SizedBox(width: 100),
+<<<<<<< HEAD
                     const Text(
                       'Personal Dates',
+=======
+                    Text(
+                      'Personal Data',
+>>>>>>> f27b94f3ffe69c3f1104080f926d77da177b860e
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
@@ -93,11 +173,11 @@ class _CategoryState extends State<Profiledetails> {
                     _image == null
                         ? const Text('No image selected.')
                         : Image.file(
-                            _image!,
-                            height: 150,
-                            width: 150,
-                            fit: BoxFit.cover,
-                          ),
+                      _image!,
+                      height: 150,
+                      width: 150,
+                      fit: BoxFit.cover,
+                    ),
                     const SizedBox(height: 20),
                     ElevatedButton(
                       onPressed: () {
@@ -123,24 +203,15 @@ class _CategoryState extends State<Profiledetails> {
                     children: [
                       const Text(
                         'Full Name',
-                        textAlign: TextAlign.left,
                         style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF000000)),
+                            fontSize: 14, fontWeight: FontWeight.w600),
                       ),
                       const SizedBox(height: 10),
-                      // Name Field
                       TextFormField(
+                        controller: nameController,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                                8.0), // Set the border radius here
-                            borderSide: const BorderSide(
-                              color: Color(
-                                  0xFFd6d6d6), // Customize the border color
-                              width: 1.0, // Customize the border width
-                            ),
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
                           hintText: 'Enter Your Full Name',
                         ),
@@ -150,32 +221,15 @@ class _CategoryState extends State<Profiledetails> {
                           }
                           return null;
                         },
-                        onChanged: (value) {
-                          setState(() {
-                            name = value;
-                          });
-                        },
                       ),
                       const SizedBox(height: 16.0),
-                      const Text(
-                        'Date of birth',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF000000)),
-                      ),
+                      const Text('Date of birth'),
                       const SizedBox(height: 10.0),
                       TextFormField(
+                        controller: dateofBirthController,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                                8.0), // Set the border radius here
-                            borderSide: const BorderSide(
-                              color: Color(
-                                  0xFFd6d6d6), // Customize the border color
-                              width: 1.0, // Customize the border width
-                            ),
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
                           hintText: 'Enter Your Date of birth',
                         ),
@@ -183,52 +237,37 @@ class _CategoryState extends State<Profiledetails> {
                         onTap: () async {
                           final date = await showDatePicker(
                             context: context,
-                            initialDate: dateOfBirth ?? DateTime.now(),
+                            initialDate: DateTime.now(),
                             firstDate: DateTime(1900),
                             lastDate: DateTime.now(),
                           );
                           if (date != null) {
                             setState(() {
-                              dateOfBirth = date;
+                              dateofBirthController.text =
+                              "${date.day}/${date.month}/${date.year}";
                             });
                           }
                         },
                         validator: (value) {
-                          if (dateOfBirth == null) {
+                          if (value == null || value.isEmpty) {
                             return 'Please select your date of birth';
                           }
                           return null;
                         },
-                        controller: TextEditingController(
-                          text: dateOfBirth != null
-                              ? "${dateOfBirth!.day}/${dateOfBirth!.month}/${dateOfBirth!.year}"
-                              : '',
-                        ),
                       ),
                       const SizedBox(height: 10.0),
-                      const Text(
-                        'Gender',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF000000)),
-                      ),
+                      const Text('Gender'),
                       const SizedBox(height: 10.0),
                       DropdownButtonFormField<String>(
+                        value: genderController.text.isEmpty
+                            ? null
+                            : genderController.text,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                                8.0), // Set the border radius here
-                            borderSide: const BorderSide(
-                              color: Color(
-                                  0xFFd6d6d6), // Customize the border color
-                              width: 1.0, // Customize the border width
-                            ),
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
-                          hintText: 'Select Gender',
+                          hintText: genderController.text.toString()=="" ? "Select Gender":"${genderController.text}",
                         ),
-                        value: gender,
                         items: <String>['Male', 'Female', 'Other']
                             .map<DropdownMenuItem<String>>((String value) {
                           return DropdownMenuItem<String>(
@@ -238,37 +277,24 @@ class _CategoryState extends State<Profiledetails> {
                         }).toList(),
                         onChanged: (value) {
                           setState(() {
-                            gender = value;
+                            genderController.text = value!;
                           });
                         },
                         validator: (value) {
-                          if (value == null) {
+                          if (value == null || value.isEmpty) {
                             return 'Please select your gender';
                           }
                           return null;
                         },
                       ),
-
                       const SizedBox(height: 10),
-                      const Text(
-                        'Phone',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF000000)),
-                      ),
+                      const Text('Phone'),
                       const SizedBox(height: 10.0),
                       TextFormField(
+                        controller: mobNoController,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                                8.0), // Set the border radius here
-                            borderSide: const BorderSide(
-                              color: Color(
-                                  0xFFd6d6d6), // Customize the border color
-                              width: 1.0, // Customize the border width
-                            ),
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
                           hintText: 'Enter your Phone',
                         ),
@@ -278,115 +304,51 @@ class _CategoryState extends State<Profiledetails> {
                           }
                           return null;
                         },
-                        onChanged: (value) {
-                          setState(() {
-                            phone = value;
-                          });
-                        },
                       ),
-                      // Email Field
                       const SizedBox(height: 10.0),
-                      const Text(
-                        'Email',
-                        textAlign: TextAlign.left,
-                        style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF000000)),
-                      ),
+                      const Text('Email'),
                       const SizedBox(height: 10.0),
                       TextFormField(
+                        enabled: false,
+                        controller: emailController,
                         decoration: InputDecoration(
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(
-                                8.0), // Set the border radius here
-                            borderSide: const BorderSide(
-                              color: Color(
-                                  0xFFd6d6d6), // Customize the border color
-                              width: 1.0, // Customize the border width
-                            ),
+                            borderRadius: BorderRadius.circular(8.0),
                           ),
                           hintText: 'Enter your Email',
                         ),
                         validator: (value) {
                           if (value == null || value.isEmpty) {
                             return 'Please enter your email';
-                          } else if (!RegExp(r'^[^@]+@[^@]+\.[^@]+')
+                          } else if (!RegExp(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$')
                               .hasMatch(value)) {
-                            return 'Please enter a valid email';
+                            return 'Enter a valid email';
                           }
                           return null;
                         },
-                        onChanged: (value) {
-                          setState(() {
-                            email = value;
-                          });
-                        },
                       ),
-                      const SizedBox(height: 16.0),
-
-                      // Submit Button
+                      const SizedBox(height: 20),
                       ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFFE8C00),
+                          minimumSize: const Size(350, 0),
+                          alignment: Alignment.bottomCenter,
+                        ),
                         onPressed: () {
                           if (_formKeyss.currentState!.validate()) {
-                            // Process data if the form is valid
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Processing Data')),
-                            );
-                            // You can send the data to the server or process it as needed
+                            saveUserProfile();
                           }
                         },
-                        child: const Text('Submit'),
+                        child: Padding(
+                          padding: EdgeInsets.all(20.0),
+                          child: const Text('Save', style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),),
+                        ),
                       ),
                     ],
-                  ),
-                ),
-              ),
-              // const Padding(
-              //   padding: EdgeInsets.all(16.0),
-              //   child: Row(
-              //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //     children: [
-              //       Text(
-              //         'Find by Category',
-              //         style: TextStyle(
-              //           fontSize: 16,
-              //           fontWeight: FontWeight.w600,
-              //           color: Colors.black,
-              //         ),
-              //       ),
-              //       Text(
-              //         'See Allaa',
-              //         style: TextStyle(
-              //           fontSize: 14,
-              //           color: Color(0xffFE8C00),
-              //         ),
-              //       ),
-              //     ],
-              //   ),
-              // ),
-              const SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const Setting()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFE8C00),
-                  minimumSize: const Size(350, 0),
-                  alignment: Alignment.bottomCenter,
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Text(
-                    'Next',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
                   ),
                 ),
               ),
@@ -396,10 +358,4 @@ class _CategoryState extends State<Profiledetails> {
       ),
     );
   }
-}
-
-void main() {
-  runApp(const MaterialApp(
-    home: Profiledetails(),
-  ));
 }

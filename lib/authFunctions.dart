@@ -1,31 +1,69 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:getxbase/Modules/homescreen/forget.dart';
 // ignore: depend_on_referenced_packages
 
 class AuthServices {
-  static signupUser(
-      String email, String password, String name, BuildContext context) async {
+
+  static Future<void> saveUser(String name, String email, String uid) async {
     try {
+      await FirebaseFirestore.instance.collection('register').doc(uid).set({
+        'uid': uid,
+        'email': email,
+        'username': name,
+        'gender': "",
+        'dateOfBirth': "",
+        'mobNo': "",
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+      print("User data saved to Firestore.");
+    } catch (e) {
+      print("Error saving user data to Firestore: $e");
+    }
+  }
+
+
+  static signupUser(String email, String password, String name, BuildContext context) async {
+    try {
+      // Create user in Firebase Authentication
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: email, password: password);
 
+      // Update display name and email after registration
       await FirebaseAuth.instance.currentUser!.updateDisplayName(name);
       await FirebaseAuth.instance.currentUser!.updateEmail(email);
-      await FirestoreServices.saveUser(name, email, userCredential.user!.uid);
+
+      // Save user details to Firestore
+      await saveUser(name, email, userCredential.user!.uid);
+
+      // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Registration Successful')));
+        const SnackBar(content: Text('Registration Successful')),
+      );
+
+      // Navigate to the next screen or close the registration screen
+      // Navigator.pushReplacementNamed(context, '/home'); // Example navigation
+
     } on FirebaseAuthException catch (e) {
+      // Handle specific Firebase Auth errors
+      String errorMessage;
       if (e.code == 'weak-password') {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Password Provided is too weak')));
+        errorMessage = 'The password provided is too weak.';
       } else if (e.code == 'email-already-in-use') {
-        ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Email Provided already Exists')));
+        errorMessage = 'The email provided is already in use.';
+      } else {
+        errorMessage = 'Error: ${e.message}';
       }
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(errorMessage)),
+      );
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
+      // General error handling
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $e")),
+      );
     }
   }
 
@@ -50,6 +88,3 @@ class AuthServices {
   }
 }
 
-class FirestoreServices {
-  static saveUser(String name, String email, String uid) {}
-}
