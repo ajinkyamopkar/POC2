@@ -314,10 +314,10 @@ class _MyWidgetState extends State<Homescreen> {
 
         if (userData != null) {
           // Proceed if userData is not null
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const Categorydetails()),
-          );
+          // Navigator.push(
+          //   context,
+          //   MaterialPageRoute(builder: (context) => const Categorydetails()),
+          // );
         } else {
           throw Exception("User data is null");
         }

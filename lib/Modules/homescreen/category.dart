@@ -1,8 +1,9 @@
-import 'dart:developer';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:getxbase/Modules/homescreen/profiledetails.dart';
+import 'package:getxbase/login.dart';
 import 'categoryDetails.dart';
-import 'test.dart'; // Make sure this import is correct
 
 class Category extends StatefulWidget {
   const Category({super.key});
@@ -11,29 +12,50 @@ class Category extends StatefulWidget {
   State<Category> createState() => _CategoryState();
 }
 
-class _CategoryState extends State<Category>
-    with SingleTickerProviderStateMixin {
-  late TabController tabController;
-
-  get categoryName => null;
+class _CategoryState extends State<Category> {
+  final CollectionReference categories =
+  FirebaseFirestore.instance.collection("categories");
+  String selectedCategoryId = '';
+  bool isSearching = false;
+  String searchQuery = '';
 
   @override
   void initState() {
     super.initState();
-    // Initialize the TabController
-    tabController = TabController(length: 4, vsync: this);
+
+    //------------- get selectedCategoryId ----------- //
+    categories.snapshots().first.then((snapshot) {
+      if (snapshot.docs.isNotEmpty) {
+        setState(() {
+          selectedCategoryId = snapshot.docs.first.id;
+        });
+      }
+    });
   }
 
-  final CollectionReference categories =
-      FirebaseFirestore.instance.collection("fetch data");
-
-  int _currentIndex = 0;
-
-  // Method to handle navigation changes
-  void _onItemTapped(int index) {
+  void _toggleSearch() {
     setState(() {
-      _currentIndex = index;
+      isSearching = !isSearching;
+      if (!isSearching) {
+        searchQuery = '';
+      }
     });
+  }
+
+  Future<void> logout(BuildContext context) async {
+    try {
+      await FirebaseAuth.instance.signOut();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const LoginForm()),
+      );
+    } catch (e) {
+      // Handle error
+      print("Error signing out: $e");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error signing out. Please try again.")),
+      );
+    }
   }
 
   @override
@@ -43,32 +65,7 @@ class _CategoryState extends State<Category>
         fontFamily: 'Inter',
       ),
       home: Scaffold(
-        bottomNavigationBar: BottomNavigationBar(
-          currentIndex: _currentIndex, // This controls which tab is active
-          onTap: _onItemTapped, // This calls the _onItemTapped function
-          showSelectedLabels: false, // Hides selected label
-          showUnselectedLabels: false, // Hides unselected labels
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: 'Home', // Label is required
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.search),
-              label: '', // Label is required
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person),
-              label: '', // Label is required
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.verified_user),
-              label: '', // Label is required
-            ),
-          ],
-        ),
         body: SingleChildScrollView(
-          // Ensure SingleChildScrollView wraps the entire body
           child: Column(
             children: [
               // Banner Section
@@ -102,12 +99,17 @@ class _CategoryState extends State<Category>
                             ],
                           ),
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              Container(
-                                margin: const EdgeInsets.all(8.0),
-                                child: Image.asset(
-                                  'assets/images/search.png',
-                                  fit: BoxFit.cover,
+                              InkWell(
+                                onTap: _toggleSearch,
+                                child: Container(
+                                  margin: const EdgeInsets.all(1.0),
+                                  child: Image.asset(
+                                    'assets/images/search.png',
+                                    fit: BoxFit.cover,
+                                  ),
                                 ),
                               ),
                               Container(
@@ -117,11 +119,65 @@ class _CategoryState extends State<Category>
                                   fit: BoxFit.cover,
                                 ),
                               ),
+
+                              InkWell(
+                                onTap: () {
+                                  logout(context);
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.all(5),
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+
+                                    border: Border.all(color: Colors.white,width: 1)
+                                  ),
+                                  child:  Icon(Icons.logout,size: 25,color: Colors.white,),
+                                ),
+                              ),
+
+                              InkWell(
+                                onTap: () {
+                              Navigator.push(context, MaterialPageRoute(builder: (context) => Profiledetails(),));
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.all(5),
+                                  decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+
+                                      border: Border.all(color: Colors.white,width: 1)
+                                  ),
+                                  child:  Icon(Icons.account_circle,size: 25,color: Colors.white,),
+                                ),
+                              )
+                            
                             ],
                           ),
                         ],
                       ),
                     ),
+                    // Display search field if searching
+                    if (isSearching)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 30, vertical: 10),
+                        child: TextField(
+                          onChanged: (value) {
+                            setState(() {
+                              searchQuery = value;
+                            });
+                          },
+                          decoration: InputDecoration(
+                            hintText: "Search for products...",
+                            filled: true,
+                            fillColor: Colors.white,
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(15.0),
+                              borderSide: BorderSide.none,
+                            ),
+                            prefixIcon: const Icon(Icons.search),
+                          ),
+                        ),
+                      ),
                     Align(
                       alignment: Alignment.bottomCenter,
                       child: Padding(
@@ -171,145 +227,174 @@ class _CategoryState extends State<Category>
                   ],
                 ),
               ),
-              const SizedBox(height: 0),
-              // Category Scrollable List
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 15),
-                  child: StreamBuilder<QuerySnapshot>(
-                    stream: FirebaseFirestore.instance
-                        .collection('categories')
-                        .snapshots(),
-                    builder:
-                        (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
-                      if (streamSnapshot.connectionState ==
-                          ConnectionState.waiting) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (streamSnapshot.hasError) {
-                        return const Center(child: Text("Error fetching data"));
-                      }
-                      if (streamSnapshot.hasData) {
-                        final docs = streamSnapshot.data!.docs;
-                        log("message data from firebase: ${docs}");
+              const SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.only(left: 15),
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: categories.snapshots(),
+                  builder:
+                      (context, AsyncSnapshot<QuerySnapshot> streamSnapshot) {
+                    if (streamSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (streamSnapshot.hasError) {
+                      return const Center(child: Text("Error fetching data"));
+                    }
+                    if (streamSnapshot.hasData) {
+                      final docs = streamSnapshot.data!.docs;
 
-                        return Row(
-                          children: docs.map((doc) {
-                            var categoryName =
-                                (doc.data() as Map<String, dynamic>?)
-                                            ?.containsKey('categoryName') ??
-                                        false
-                                    ? doc['categoryName']
-                                    : 'No category name';
+                      return SizedBox(
+                        height: 100,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: docs.length,
+                          itemBuilder: (context, index) {
+                            var categoryName = docs[index]['categoryName'] ??
+                                'No category name';
+                            String categoryId = docs[index].id;
 
-                            String imagePath = 'assets/images/burger.png';
+                            bool isSelected = selectedCategoryId == categoryId;
 
-                            // Dynamically assign images based on categoryName
-                            if (categoryName == 'Burger') {
-                              imagePath = 'assets/images/burger.png';
-                            } else if (categoryName == 'Pizza') {
-                              imagePath = 'assets/images/pizza.png';
-                            } else if (categoryName == 'Drink') {
-                              imagePath = 'assets/images/drink.png';
-                            } else if (categoryName == 'Taco') {
-                              imagePath = 'assets/images/taco.png';
-                            }
-
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 20.0),
-                              child: CategoryItem(
-                                image: imagePath,
-                                title: categoryName,
+                            return GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedCategoryId = categoryId;
+                                });
+                              },
+                              child: Padding(
+                                padding: const EdgeInsets.only(right: 20.0),
+                                child: CategoryItem(
+                                  image:
+                                  'assets/images/taco.png',
+                                  title: categoryName,
+                                  backgroundColor: isSelected
+                                      ? const Color(0xFFFF8C00)
+                                      : Colors.white,
+                                ),
                               ),
                             );
-                          }).toList(),
-                        );
-                      } else {
-                        return const Center(child: Text("No data available"));
-                      }
-                    },
-                  ),
+                          },
+                        ),
+                      );
+                    } else {
+                      return const Center(child: Text("No data available"));
+                    }
+                  },
                 ),
               ),
               const SizedBox(height: 20),
-              TabBar(
-                controller: tabController,
-                dividerColor: Colors.transparent,
-                indicatorColor: Color(0xFFFE8C00),
-                labelColor: Color(0xFFFFFFFF),
-                indicator: const BoxDecoration(
-                  color: Color(0xFFFE8C00),
-                  borderRadius: BorderRadius.all(
-                    Radius.circular(8),
-                  ),
-                ),
-                tabs: [
-                  SizedBox(
-                    width: double.infinity,
-                    child: Tab(
-                        text: '[categoryName]',
-                        icon: Image.asset('assets/images/burger.png')),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Tab(
-                      text: 'two',
-                      icon: Icon(Icons.email, color: Colors.indigo.shade500),
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Tab(
-                      text: 'three',
-                      icon: Icon(Icons.star, color: Colors.indigo.shade500),
-                    ),
-                  ),
-                  SizedBox(
-                    width: double.infinity,
-                    child: Tab(
-                      text: 'four',
-                      icon: Icon(Icons.person, color: Colors.indigo.shade500),
-                    ),
-                  ),
-                ],
-              ),
               SizedBox(
                 height: 300,
-                child: TabBarView(
-                  controller: tabController,
-                  children: [
-                    FirstScreen(tabController: tabController),
-                    SecondScreen(tabController: tabController),
-                    ThirdScreen(tabController: tabController),
-                    FourthScreen(tabController: tabController),
-                  ],
-                ),
-              ),
-              // Navigation button
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => const Categorydetails()),
-                  );
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFFE8C00),
-                  minimumSize: const Size(350, 0),
-                  alignment: Alignment.bottomCenter,
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.all(20.0),
-                  child: Text(
-                    'Next',
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
+                child: StreamBuilder<QuerySnapshot>(
+                  stream: FirebaseFirestore.instance
+                      .collection("fooditems")
+                      .doc(selectedCategoryId)
+                      .collection("products")
+                      .snapshots(),
+                  builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (snapshot.hasError) {
+                      return const Center(
+                          child: Text("Error loading products"));
+                    }
+                    if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                      final filteredDocs = snapshot.data!.docs.where((doc) {
+                        final title = doc['title']?.toString().toLowerCase() ?? '';
+                        return title.contains(searchQuery.toLowerCase());
+                      }).toList();
+
+                      if (filteredDocs.isEmpty) {
+                        return const Center(child: Text("No products found"));
+                      }
+
+                      return ListView.builder(
+                        itemCount: filteredDocs.length,
+                        itemBuilder: (context, index) {
+                          var productDoc = filteredDocs[index];
+                          var title = productDoc['title'] ?? 'Food Item';
+                          var price = productDoc['price'] ?? 'Unknown';
+                          var star = productDoc['star'] ?? 'N/A';
+                          var distance = productDoc['distance'] ?? 'N/A';
+                          var description = productDoc['desc'] ?? 'No description';
+
+                          return InkWell(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => CategoryDetails(
+                                    data: productDoc,
+                                  ),
+                                ),
+                              );
+                            },
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Card(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(15),
+                                ),
+                                elevation: 4,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(12.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        title,
+                                        style: const TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      ListTile(
+                                        contentPadding:
+                                        const EdgeInsets.symmetric(
+                                            vertical: 8.0),
+                                        title: Text(
+                                          title,
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        subtitle: Column(
+                                          crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                          children: [
+                                            Text("Price: \$$price",
+                                                style: const TextStyle(
+                                                    fontSize: 14)),
+                                            Text("Rating: $star",
+                                                style: const TextStyle(
+                                                    fontSize: 14)),
+                                            Text("Distance: $distance",
+                                                style: const TextStyle(
+                                                    fontSize: 14)),
+                                            Text("Description: $description",
+                                                style: const TextStyle(
+                                                    fontSize: 14,
+                                                    color: Colors.grey)),
+                                          ],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    } else {
+                      return const Center(child: Text("No products available"));
+                    }
+                  },
                 ),
               ),
             ],
@@ -323,33 +408,36 @@ class _CategoryState extends State<Category>
 class CategoryItem extends StatelessWidget {
   final String image;
   final String title;
+  final Color backgroundColor;
 
-  const CategoryItem({Key? key, required this.image, required this.title})
-      : super(key: key);
+  const CategoryItem({
+    required this.image,
+    required this.title,
+    required this.backgroundColor,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 80,
-      height: 80,
       decoration: BoxDecoration(
-        color: const Color(0xFFFF8C00),
-        borderRadius: BorderRadius.circular(15),
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(12),
       ),
-      padding: const EdgeInsets.all(10.0),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(
             image,
-            width: 45,
             height: 40,
           ),
+          const SizedBox(height: 8),
           Text(
             title,
             style: const TextStyle(
               fontSize: 14,
-              color: Colors.white,
               fontWeight: FontWeight.bold,
+              color: Colors.black,
             ),
           ),
         ],

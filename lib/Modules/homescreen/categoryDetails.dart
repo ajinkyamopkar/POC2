@@ -1,29 +1,43 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:getxbase/Modules/homescreen/mycart.dart';
 // ignore: depend_on_referenced_packages
 import 'package:carousel_slider/carousel_slider.dart';
 
-class Categorydetails extends StatefulWidget {
-  const Categorydetails({super.key});
+class CategoryDetails extends StatefulWidget {
+  QueryDocumentSnapshot data;
+
+  CategoryDetails({super.key, required this.data});
 
   @override
-  State<Categorydetails> createState() => _MyWidgetState();
+  State<CategoryDetails> createState() => _CategoryDetailsState();
 }
 
-class _MyWidgetState extends State<Categorydetails> {
-  int number = 0; // Initialize number
+class _CategoryDetailsState extends State<CategoryDetails> {
+  int number = 1; // Initialize number
 
   void incrementNumber() {
-    setState(() {
-      number += 1;
-    });
+    // Parse the stock quantity from widget data and ensure it's greater than 0
+    int stockQty = int.parse(widget.data['stock_qty'].toString());
+
+    if (number < stockQty) {
+      setState(() {
+        number += 1;
+      });
+    } else {
+      Fluttertoast.showToast(msg: "Stock is not available");
+    }
   }
 
   void decrementNumber() {
-    if (number > 0) {
+    // Ensure number does not go below 1
+    if (number > 1) {
       setState(() {
         number -= 1;
       });
+    } else {
+      Fluttertoast.showToast(msg: "Minimum quantity is 1");
     }
   }
 
@@ -36,9 +50,7 @@ class _MyWidgetState extends State<Categorydetails> {
     ];
 
     return Scaffold(
-      appBar: AppBar(
-          // title: const Text('Category Details'),
-          ),
+      appBar: AppBar(),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -52,49 +64,41 @@ class _MyWidgetState extends State<Categorydetails> {
                   autoPlay: true,
                   autoPlayInterval: const Duration(seconds: 2),
                   enlargeCenterPage: true,
-                  aspectRatio: 30 / 2,
-                  onPageChanged: (index, reason) {
-                    // You can perform some action when the page changes
-                    print('Current page: $index');
-                  },
                 ),
                 items: imgList
-                    .map((item) => Container(
-                          child: Center(
-                            child: Image.asset(item,
-                                fit: BoxFit.cover, width: 1000),
-                          ),
-                        ))
+                    .map((item) =>
+                        Image.asset(item, fit: BoxFit.cover, width: 1000))
                     .toList(),
               ),
               const SizedBox(height: 20),
-              const Text(
-                'Burger With Meat',
-                style: TextStyle(
+
+              // Title
+              Text(
+                widget.data['title'],
+                style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w600,
                   color: Colors.black,
                 ),
               ),
               const SizedBox(height: 10),
-              const Text(
-                '\$ 12,230',
-                style: TextStyle(
+
+              // Price
+              Text(
+                '\$${widget.data['price']}',
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFFE8C00),
                 ),
               ),
               const SizedBox(height: 20),
-              const Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
+
+              // Details (Star, Distance, Rating)
+              Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Icon(
-                    Icons.star,
-                    color: Colors.orange,
-                    size: 24,
-                  ),
+                  Icon(Icons.star, color: Colors.orange, size: 24),
                   Text(
                     'Free Delivery',
                     style: TextStyle(
@@ -104,27 +108,19 @@ class _MyWidgetState extends State<Categorydetails> {
                     ),
                   ),
                   SizedBox(width: 40),
-                  Icon(
-                    Icons.star,
-                    color: Colors.orange,
-                    size: 24,
-                  ),
+                  const Icon(Icons.star, color: Colors.orange, size: 24),
                   Text(
-                    '20 - 30',
+                    widget.data['distance'],
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF878787),
                     ),
                   ),
-                  SizedBox(width: 40),
-                  Icon(
-                    Icons.star,
-                    color: Colors.orange,
-                    size: 24,
-                  ),
+                  const SizedBox(width: 40),
+                  Icon(Icons.star, color: Colors.orange, size: 24),
                   Text(
-                    '4.5',
+                    widget.data['star'],
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -134,10 +130,12 @@ class _MyWidgetState extends State<Categorydetails> {
                 ],
               ),
               const SizedBox(height: 30),
-              const Column(
+
+              // Description
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     'Description',
                     style: TextStyle(
                       fontFamily: 'Inter',
@@ -146,19 +144,21 @@ class _MyWidgetState extends State<Categorydetails> {
                       color: Color(0xFF101010),
                     ),
                   ),
-                  SizedBox(height: 10),
+                  const SizedBox(height: 10),
                   Text(
-                    'Burger With Meat is a typical food from our restaurant that is much in demand by many people. This is highly recommended for you.',
-                    style: TextStyle(
+                    widget.data['title'],
+                    style: const TextStyle(
                       fontFamily: 'Inter',
                       fontSize: 14,
                       fontWeight: FontWeight.w400,
                       color: Color(0xFF878787),
                     ),
                   ),
-                  SizedBox(height: 30),
                 ],
               ),
+              const SizedBox(height: 30),
+
+              // Quantity Selector
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -169,12 +169,10 @@ class _MyWidgetState extends State<Categorydetails> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
-                          elevation: 0,
                         ),
                         child: const Text(
                           '-',
                           style: TextStyle(
-                            fontFamily: 'Inter',
                             fontSize: 34,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF000000),
@@ -183,7 +181,7 @@ class _MyWidgetState extends State<Categorydetails> {
                       ),
                       const SizedBox(width: 10),
                       Text(
-                        ' $number',
+                        '$number',
                         style: const TextStyle(
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
@@ -195,12 +193,10 @@ class _MyWidgetState extends State<Categorydetails> {
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.transparent,
                           shadowColor: Colors.transparent,
-                          elevation: 0,
                         ),
                         child: const Text(
                           '+',
                           style: TextStyle(
-                            fontFamily: 'Inter',
                             fontSize: 34,
                             fontWeight: FontWeight.w700,
                             color: Color(0xFF000000),
@@ -209,9 +205,9 @@ class _MyWidgetState extends State<Categorydetails> {
                       ),
                     ],
                   ),
-                  const Text(
-                    ' \$ 24,460',
-                    style: TextStyle(
+                  Text(
+                    '\$${double.parse(widget.data['price']) * number}',
+                    style: const TextStyle(
                       fontSize: 24,
                       color: Color(0xffFE8C00),
                     ),
@@ -219,6 +215,8 @@ class _MyWidgetState extends State<Categorydetails> {
                 ],
               ),
               const SizedBox(height: 30),
+
+              // Add to Cart Button
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -231,18 +229,13 @@ class _MyWidgetState extends State<Categorydetails> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFFFE8C00),
                   minimumSize: const Size(350, 0),
-                  alignment: Alignment.center,
                 ),
                 child: const Padding(
                   padding: EdgeInsets.all(20.0),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.shopping_cart,
-                        color: Colors.white,
-                        size: 24,
-                      ),
+                      Icon(Icons.shopping_cart, color: Colors.white, size: 24),
                       SizedBox(width: 8),
                       Text(
                         ' Add to Cart',
@@ -262,10 +255,4 @@ class _MyWidgetState extends State<Categorydetails> {
       ),
     );
   }
-}
-
-void main() {
-  runApp(const MaterialApp(
-    home: Categorydetails(),
-  ));
 }

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -31,13 +32,28 @@ class _RegisterState extends State<Register> {
     String password = passwordController.text.trim();
 
     try {
+      // Create user with email and password
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
         email: email,
         password: password,
       );
 
-      // Here you can save the username to your database or Firestore
+      // Save user details to Firestore
+try{
+  await FirebaseFirestore.instance
+      .collection('register')
+      .doc(userCredential.user!.uid)
+      .set({
+    'uid': userCredential.user!.uid,
+    'email': email,
+    'username': username,
+    'createdAt': FieldValue.serverTimestamp(),
+  });
+  print('successSaveDatainFirebase${userCredential.user!.uid}');
+}catch(e){
+  print('dataexception:${e.toString()}');
+}
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Registration successful!')),
@@ -57,6 +73,10 @@ class _RegisterState extends State<Register> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(errorMessage)),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: ${e.toString()}')),
       );
     }
   }
@@ -78,7 +98,7 @@ class _RegisterState extends State<Register> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
-                      'Create your new \naccount.',
+                      'Create your new \naccountss.',
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 32,
@@ -87,7 +107,7 @@ class _RegisterState extends State<Register> {
                       ),
                     ),
                     const Text(
-                      'Create an account to start looking for the food you like',
+                      'Create anghfhgfgh account to start looking for the food you like',
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 14,
