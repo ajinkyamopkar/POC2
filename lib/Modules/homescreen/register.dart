@@ -90,7 +90,7 @@ class _RegisterState extends State<Register> {
                       'Create an account to start looking for the food you like',
                       style: TextStyle(
                         fontFamily: 'Inter',
-                        fontSize: 14,
+                        fontSize: 15,
                         fontWeight: FontWeight.w500,
                         color: Color(0xFF878787),
                       ),
@@ -104,6 +104,7 @@ class _RegisterState extends State<Register> {
                         color: Color(0xFF000000),
                       ),
                     ),
+                    const SizedBox(height: 20),
                     TextFormField(
                       controller: emailController,
                       decoration: const InputDecoration(
@@ -129,6 +130,7 @@ class _RegisterState extends State<Register> {
                         color: Color(0xFF000000),
                       ),
                     ),
+                    const SizedBox(height: 20),
                     TextFormField(
                       controller: usernameController,
                       decoration: const InputDecoration(
@@ -151,6 +153,7 @@ class _RegisterState extends State<Register> {
                         color: Color(0xFF000000),
                       ),
                     ),
+                    const SizedBox(height: 20),
                     TextFormField(
                       controller: passwordController,
                       obscureText: isPassVisible,
@@ -197,6 +200,62 @@ class _RegisterState extends State<Register> {
                         ),
                       ),
                     ),
+                    Column(children: <Widget>[
+                      Row(children: <Widget>[
+                        Expanded(
+                          child: Container(
+                              margin: const EdgeInsets.only(
+                                  left: 10.0, right: 20.0),
+                              child: const Divider(
+                                color: Color(0xFF878787),
+                                height: 56,
+                              )),
+                        ),
+                        const Text(
+                          'Or sign in with',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Color(0xFF878787),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                              margin: const EdgeInsets.only(
+                                  left: 20.0, right: 10.0),
+                              child: const Divider(
+                                color: Color(0xFF878787),
+                                height: 36,
+                              )),
+                        ),
+                      ]),
+                    ]),
+                    Padding(
+                      padding: const EdgeInsets.all(0.0),
+                      child: Column(children: <Widget>[
+                        Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: <Widget>[
+                              Image.asset(
+                                'assets/images/gp.png',
+                                fit: BoxFit.none,
+                              ),
+                              const SizedBox(width: 20),
+                              // Spacing between images
+                              Image.asset(
+                                'assets/images/facebook.png',
+                                fit: BoxFit.cover,
+                              ),
+                              const SizedBox(width: 20),
+                              // Spacing between images
+                              Image.asset(
+                                'assets/images/apple.png',
+                                fit: BoxFit.cover,
+                              ),
+                            ]),
+                      ]),
+                    ),
+                    const SizedBox(height: 20),
                     // Additional UI elements...
                   ],
                 ),

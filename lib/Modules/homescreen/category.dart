@@ -1,6 +1,9 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:getxbase/Modules/homescreen/mycart.dart';
+import 'package:getxbase/Modules/homescreen/noorder.dart';
+import 'package:getxbase/Modules/homescreen/profiledetails.dart';
 import 'categoryDetails.dart';
 import 'test.dart'; // Make sure this import is correct
 
@@ -12,29 +15,53 @@ class Category extends StatefulWidget {
 }
 
 class _CategoryState extends State<Category>
-    with SingleTickerProviderStateMixin {
+// Keep track of the selected index
+
+    with
+        SingleTickerProviderStateMixin {
   late TabController tabController;
 
   get categoryName => null;
+  final int _currentIndex = 0;
+  // List of pages to navigate to
+  final List<Widget> _pages = [
+    const Category(),
+    const NoOrder(),
+    const Mycart(),
+    const Profiledetails(),
+  ];
+
+  // Method to handle BottomNavigationBar item taps and navigate
+  void _onItemTapped(int index) {
+    // Use Navigator.push to push a new route when a tab is tapped
+    switch (index) {
+      case 0:
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => const Category()));
+        break;
+      case 1:
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => const NoOrder()));
+        break;
+      case 2:
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => const Mycart()));
+        break;
+      case 3:
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => const Profiledetails()));
+        break;
+    }
+  }
 
   @override
   void initState() {
     super.initState();
-    // Initialize the TabController
     tabController = TabController(length: 4, vsync: this);
   }
 
   final CollectionReference categories =
       FirebaseFirestore.instance.collection("fetch data");
-
-  int _currentIndex = 0;
-
-  // Method to handle navigation changes
-  void _onItemTapped(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,26 +70,30 @@ class _CategoryState extends State<Category>
         fontFamily: 'Inter',
       ),
       home: Scaffold(
+        // body: _pages[_currentIndex],
         bottomNavigationBar: BottomNavigationBar(
           currentIndex: _currentIndex, // This controls which tab is active
           onTap: _onItemTapped, // This calls the _onItemTapped function
           showSelectedLabels: false, // Hides selected label
           showUnselectedLabels: false, // Hides unselected labels
+          backgroundColor: Colors.red,
+          selectedItemColor: Colors.orange,
+          unselectedItemColor: const Color(0xffC2C2C2),
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.home),
               label: 'Home', // Label is required
             ),
             BottomNavigationBarItem(
-              icon: Icon(Icons.search),
+              icon: Icon(Icons.shop),
+              label: '', // Label is required
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.chat),
               label: '', // Label is required
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
-              label: '', // Label is required
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.verified_user),
               label: '', // Label is required
             ),
           ],
@@ -192,7 +223,7 @@ class _CategoryState extends State<Category>
                       }
                       if (streamSnapshot.hasData) {
                         final docs = streamSnapshot.data!.docs;
-                        log("message data from firebase: ${docs}");
+                        log("message data from firebase: $docs");
 
                         return Row(
                           children: docs.map((doc) {
@@ -236,8 +267,8 @@ class _CategoryState extends State<Category>
               TabBar(
                 controller: tabController,
                 dividerColor: Colors.transparent,
-                indicatorColor: Color(0xFFFE8C00),
-                labelColor: Color(0xFFFFFFFF),
+                indicatorColor: const Color(0xFFFE8C00),
+                labelColor: const Color(0xFFFFFFFF),
                 indicator: const BoxDecoration(
                   color: Color(0xFFFE8C00),
                   borderRadius: BorderRadius.all(
@@ -248,7 +279,7 @@ class _CategoryState extends State<Category>
                   SizedBox(
                     width: double.infinity,
                     child: Tab(
-                        text: '[categoryName]',
+                        text: "categoryName",
                         icon: Image.asset('assets/images/burger.png')),
                   ),
                   SizedBox(

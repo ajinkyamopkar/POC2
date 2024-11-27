@@ -21,6 +21,7 @@ dependencies:
   firebase_storage: ^12.3.6
   # cached_network_image: ^3.4.1
   get: ^4.6.6
+  http: ^0.13.0
 
 
   # Offline Stoarage #
@@ -28,10 +29,6 @@ dependencies:
   carousel_slider: ^4.0.0 
   # State Management Aproach #
   # get: ^4.3.8
-
-
-  # IOS Material Icons #
-  http: ^0.13.4
 
   # Manages Loader #
   flutter_easyloading: ^3.0.3

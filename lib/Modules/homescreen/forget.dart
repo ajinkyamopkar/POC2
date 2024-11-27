@@ -1,8 +1,6 @@
 // import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:getxbase/Modules/homescreen/category.dart';
-import 'package:getxbase/Modules/homescreen/faviourtefood.dart';
-import 'package:getxbase/Modules/homescreen/profiledetails.dart';
 
 class Forget extends StatefulWidget {
   const Forget({super.key});

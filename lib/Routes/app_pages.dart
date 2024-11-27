@@ -1,5 +1,6 @@
 import 'package:get/get.dart';
 import 'package:getxbase/Modules/authentication/onborading/splashscreen.dart';
+import 'package:getxbase/Modules/homescreen/apifetch.dart';
 import 'package:getxbase/Modules/homescreen/homescreens.dart';
 import 'package:getxbase/Routes/app_routes.dart';
 

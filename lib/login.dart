@@ -35,9 +35,9 @@ class _LoginFormState extends State<LoginForm> {
             // mainAxisAlignment: MainAxisAlignment.start,
 
             children: [
-              Align(
+              const Align(
                 alignment: Alignment.centerLeft,
-                child: const Text(
+                child: Text(
                   'Create your new \naccount.',
                   style: TextStyle(
                     fontFamily: 'Inter',
@@ -58,9 +58,9 @@ class _LoginFormState extends State<LoginForm> {
                 ),
               ),
               const SizedBox(height: 30),
-              Align(
+              const Align(
                 alignment: Alignment.centerLeft,
-                child: const Text(
+                child: Text(
                   'User Name',
                   style: TextStyle(
                     fontSize: 14,
@@ -95,9 +95,9 @@ class _LoginFormState extends State<LoginForm> {
 
               // ======== Email ========
               const SizedBox(height: 20),
-              Align(
+              const Align(
                 alignment: Alignment.centerLeft,
-                child: const Text(
+                child: Text(
                   'Email Address',
                   style: TextStyle(
                     fontSize: 14,
@@ -127,9 +127,9 @@ class _LoginFormState extends State<LoginForm> {
               ),
               // ======== Password ========
               const SizedBox(height: 20),
-              Align(
+              const Align(
                 alignment: Alignment.centerLeft,
-                child: const Text(
+                child: Text(
                   'Password',
                   style: TextStyle(
                     fontSize: 14,
@@ -180,7 +180,7 @@ class _LoginFormState extends State<LoginForm> {
                   ),
                   child: Text(
                     login ? 'Login' : 'Register',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: Colors.white,

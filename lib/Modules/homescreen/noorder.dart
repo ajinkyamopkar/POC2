@@ -40,6 +40,7 @@ class _NoOrderState extends State<NoOrder> {
                             Navigator.pop(context);
                           },
                           child: Container(
+                            padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               border: Border.all(

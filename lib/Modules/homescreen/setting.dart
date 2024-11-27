@@ -10,6 +10,8 @@ class Setting extends StatefulWidget {
 
 class _CategoryState extends State<Setting> {
   bool isPushNotificationEnabled = false;
+  bool light = false;
+  bool lights = true;
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -76,12 +78,12 @@ class _CategoryState extends State<Setting> {
                   ],
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.all(16.0),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
+                    const Text(
                       'Push Notification',
                       style: TextStyle(
                         fontSize: 16,
@@ -89,39 +91,27 @@ class _CategoryState extends State<Setting> {
                         color: Colors.black,
                       ),
                     ),
-                    // Center(
-                    //   child: Switch(
-                    //     value: isPushNotificationEnabled,
-                    //     onChanged: (value) {
-                    //       setState(() {
-                    //         isPushNotificationEnabled = value;
-                    //       });
-
-                    //       // Handle your logic for enabling/disabling push notifications
-                    //       if (value) {
-                    //         // Enable push notifications
-                    //         print("Push notifications enabled");
-                    //       } else {
-                    //         // Disable push notifications
-                    //         print("Push notifications disabled");
-                    //       }
-                    //     },
-                    //     activeColor:
-                    //         Colors.green, // Color when the switch is on
-                    //     inactiveThumbColor:
-                    //         Colors.grey, // Color when the switch is off
-                    //   ),
-                    // ),
+                    Center(
+                      child: Switch(
+                        value: light, // Make sure 'light' is not a const value
+                        activeColor: const Color(0xffFE8C00),
+                        onChanged: (bool value) {
+                          setState(() {
+                            light = value; // Update the state
+                          });
+                        },
+                      ),
+                    )
                   ],
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.all(16.0),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment
                       .spaceBetween, // Correctly align items between left and right
                   children: [
-                    Text(
+                    const Text(
                       'Location',
                       style: TextStyle(
                         fontSize: 16,
@@ -129,14 +119,17 @@ class _CategoryState extends State<Setting> {
                         color: Colors.black,
                       ),
                     ),
-                    Text(
-                      'PROFILE',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black,
+                    Center(
+                      child: Switch(
+                        value: lights, // Make sure 'light' is not a const value
+                        activeColor: const Color(0xffFE8C00),
+                        onChanged: (bool value) {
+                          setState(() {
+                            lights = value; // Update the state
+                          });
+                        },
                       ),
-                    ),
+                    )
                   ],
                 ),
               ),

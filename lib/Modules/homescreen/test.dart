@@ -72,7 +72,7 @@ class FirstScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('First Screen'));
+    return const Center(child: Text('First Screen'));
   }
 }
 
@@ -82,7 +82,7 @@ class SecondScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('Second Screen'));
+    return const Center(child: Text('Second Screen'));
   }
 }
 
@@ -92,7 +92,7 @@ class ThirdScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('Third Screen'));
+    return const Center(child: Text('Third Screen'));
   }
 }
 
@@ -102,6 +102,6 @@ class FourthScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Center(child: Text('Fourth Screen'));
+    return const Center(child: Text('Fourth Screen'));
   }
 }

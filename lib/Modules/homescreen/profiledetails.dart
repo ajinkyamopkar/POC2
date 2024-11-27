@@ -56,6 +56,7 @@ class _CategoryState extends State<Profiledetails> {
                           Navigator.pop(context);
                         },
                         child: Container(
+                          padding: const EdgeInsets.all(10),
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
@@ -74,7 +75,7 @@ class _CategoryState extends State<Profiledetails> {
                     ),
                     const SizedBox(width: 100),
                     const Text(
-                      'Personal Date',
+                      'Personal Dates',
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
